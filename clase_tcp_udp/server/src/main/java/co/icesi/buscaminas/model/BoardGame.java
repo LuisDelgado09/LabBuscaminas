@@ -8,11 +8,11 @@ public class BoardGame {
 
     private int mines;
 
-    public int getMines() {
+    public synchronized int getMines() {
         return mines;
     }
 
-    public int initGame(int n, int m, int mines){
+    public synchronized int initGame(int n, int m, int mines){
         this.mines = mines;
         board = new Cell[n][m];
         Random rd = new Random();
@@ -42,7 +42,7 @@ public class BoardGame {
         return mi;
     }
 
-    public void showAll(boolean show){
+    public synchronized void showAll(boolean show){
         for (int i = 0; i <board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
                 board[i][j].setShowAll(show);
@@ -50,7 +50,7 @@ public class BoardGame {
         }
     }
 
-    private int getMinesAround(int i, int j) {
+    private synchronized int getMinesAround(int i, int j) {
         int mines = 0;
         mines += i > 0 && board[i-1][j].isLandMine()?1:0;
         mines += i < board.length-1 && board[i+1][j].isLandMine()?1:0;
@@ -63,7 +63,7 @@ public class BoardGame {
         return mines;
     }
 
-    public void printBoard(){
+    public synchronized void printBoard(){
         System.out.println();
         System.out.print("   ");
         for (int i = 0; i < board[0].length; i++) {
@@ -78,7 +78,7 @@ public class BoardGame {
             System.out.println(" ]");
         }
     }
-    public boolean selectCell(int i, int j){
+    public synchronized boolean selectCell(int i, int j){
         if(i<0 || i>= board.length || j<0 || j >= board[0].length ){
             throw new RuntimeException("Cell no valid");
         }
@@ -94,7 +94,7 @@ public class BoardGame {
         }
     }
 
-    private boolean validWin(){
+    private synchronized boolean validWin(){
         boolean win = true;
         for (int i = 0; i <board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
@@ -104,7 +104,7 @@ public class BoardGame {
         return win;
     }
 
-    private void showCells(int i, int j, boolean deep) {
+    private synchronized void showCells(int i, int j, boolean deep) {
         if(i<0 || i>= board.length || j<0 || j >= board[0].length || !board[i][j].isHide()){
             return;
         }
@@ -125,11 +125,11 @@ public class BoardGame {
         }
     }
 
-    public Cell[][] getBoard() {
+    public synchronized Cell[][] getBoard() {
         return board;
     }
 
-    public void markCell(int i, int j) {
+    public synchronized void markCell(int i, int j) {
         if(i<0 || i>= board.length || j<0 || j >= board[0].length ){
             throw new RuntimeException("Cell no valid");
         }
