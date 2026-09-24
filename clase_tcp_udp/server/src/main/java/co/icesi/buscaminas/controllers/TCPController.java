@@ -17,7 +17,6 @@ import com.google.gson.GsonBuilder;
 
 import co.icesi.buscaminas.controllers.dtos.Request;
 import co.icesi.buscaminas.controllers.dtos.Response;
-import co.icesi.buscaminas.model.Cell;
 import co.icesi.buscaminas.services.ServicesImpl;
 
 public class TCPController {
@@ -39,7 +38,7 @@ public class TCPController {
     public TCPController(ServicesImpl services, int port) {
         this.services = services;
         try {
-            serverSocket = new ServerSocket(port, 10, InetAddress.getByName("192.168.131.214"));
+            serverSocket = new ServerSocket(port, 10, InetAddress.getByName("0.0.0.0"));
             executor = Executors.newFixedThreadPool(5);
             gson = new GsonBuilder().create();
         } catch (Exception e) {
@@ -109,7 +108,7 @@ public class TCPController {
                             response.data.put("win", false);
 
                         }
-                        Cell[][] board = services.printBoard();
+                        String board = services.printBoard();
                         response.data.put("board", board);
                         break;
                     case "SOW_ALL":
@@ -130,6 +129,20 @@ public class TCPController {
                         services.initGame(i, j, m);
                         board = services.printBoard();
                         response.status = "OK";
+                        response.data.put("board", board);
+                        break;
+
+                    case "MARK_CELL":
+                        int mi = Integer.parseInt(data.get("i")); 
+                        int mj = Integer.parseInt(data.get("j")); 
+                        try {
+                            services.markCell(mi, mj);
+                            response.status = "OK";
+                        } catch (Exception e) {
+                            response.status = "ERROR";
+                            response.data.put("message", e.getMessage());
+                        }
+                        board = services.printBoard();
                         response.data.put("board", board);
                         break;
 

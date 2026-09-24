@@ -8,41 +8,46 @@ public class BoardGame {
 
     private int mines;
 
-    public int getMines() {
+    public synchronized int getMines() {
         return mines;
     }
 
-    public int initGame(int n, int m, int mines){
+    public synchronized int initGame(int n, int m, int mines){
+        if (mines < 0 || mines >= n * m) {
+            throw new IllegalArgumentException("Cantidad de minas inválida");
+        }
+
         this.mines = mines;
         board = new Cell[n][m];
-        Random rd = new Random();
-        int mi = 0;
-        for (int i = 0; i <n; i++) {
+
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
-                boolean isMine = false;
-                board[i][j] = new Cell(isMine,0);
+                board[i][j] = new Cell(false, 0);
             }
         }
-        for (int i = 0; i < mines; i++) {
-            int k =rd.nextInt(n);
-            int l = rd.nextInt(m);
-            Cell cell = board[k][l];
-            mi += cell.isLandMine()?0:1;
-            cell.setLandMine(true);
+        Random rd = new Random();
+        int placed = 0;
+
+        while (placed < mines) {
+            int i = rd.nextInt(n);
+            int j = rd.nextInt(m);
+
+            if (!board[i][j].isLandMine()) {
+                board[i][j].setLandMine(true);
+                placed++;
+            }
         }
-        for (int i = 0; i <n; i++) {
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
-                boolean isMine = board[i][j].isLandMine();
-                if(!isMine){
-                    int minesAround = getMinesAround(i,j);
-                    board[i][j].setValue(minesAround);
+                if (!board[i][j].isLandMine()) {
+                    board[i][j].setValue(getMinesAround(i, j));
                 }
             }
         }
-        return mi;
+        return placed;
     }
 
-    public void showAll(boolean show){
+    public synchronized void showAll(boolean show){
         for (int i = 0; i <board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
                 board[i][j].setShowAll(show);
@@ -50,7 +55,7 @@ public class BoardGame {
         }
     }
 
-    private int getMinesAround(int i, int j) {
+    private synchronized int getMinesAround(int i, int j) {
         int mines = 0;
         mines += i > 0 && board[i-1][j].isLandMine()?1:0;
         mines += i < board.length-1 && board[i+1][j].isLandMine()?1:0;
@@ -63,7 +68,7 @@ public class BoardGame {
         return mines;
     }
 
-    public void printBoard(){
+    public synchronized void printBoard(){
         System.out.println();
         System.out.print("   ");
         for (int i = 0; i < board[0].length; i++) {
@@ -78,7 +83,7 @@ public class BoardGame {
             System.out.println(" ]");
         }
     }
-    public boolean selectCell(int i, int j){
+    public synchronized boolean selectCell(int i, int j){
         if(i<0 || i>= board.length || j<0 || j >= board[0].length ){
             throw new RuntimeException("Cell no valid");
         }
@@ -94,7 +99,7 @@ public class BoardGame {
         }
     }
 
-    private boolean validWin(){
+    private synchronized boolean validWin(){
         boolean win = true;
         for (int i = 0; i <board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
@@ -104,32 +109,65 @@ public class BoardGame {
         return win;
     }
 
-    private void showCells(int i, int j, boolean deep) {
-        if(i<0 || i>= board.length || j<0 || j >= board[0].length || !board[i][j].isHide()){
+    private synchronized void showCells(int i, int j, boolean deep) {
+        if (i < 0 || i >= board.length ||
+            j < 0 || j >= board[0].length ||
+            !board[i][j].isHide() ||
+            board[i][j].isLandMine()) {
             return;
         }
-        if(deep && board[i][j].isHide()){
-            board[i][j].setHide(false);
-            deep = board[i][j].getValue() == 0;
+        board[i][j].setHide(false);
+        if (board[i][j].getValue() != 0) {
+            return;
         }
-
-        if (board[i][j].getValue() == 0) {
-            showCells(i, j - 1, deep);
-            showCells(i, j + 1, deep);
-            showCells(i - 1, j, deep);
-            showCells(i + 1, j, deep);
-            showCells(i - 1, j - 1, deep);
-            showCells(i - 1, j + 1, deep);
-            showCells(i + 1, j - 1, deep);
-            showCells(i + 1, j + 1, deep);
-        }
+        showCells(i, j - 1, true);
+        showCells(i, j + 1, true);
+        showCells(i - 1, j, true);
+        showCells(i + 1, j, true);
+        showCells(i - 1, j - 1, true);
+        showCells(i - 1, j + 1, true);
+        showCells(i + 1, j - 1, true);
+        showCells(i + 1, j + 1, true);
     }
 
-    public Cell[][] getBoard() {
+    public synchronized Cell[][] getBoard() {
         return board;
     }
 
-    public void markCell(int i, int j) {
+    public synchronized String getBoardString() {
+    StringBuilder result = new StringBuilder();
+
+    result.append("\n       ");
+    for (int j = 0; j < board[0].length; j++) {
+        result.append(String.format("%-4d", j + 1));
+    }
+    result.append("\n");
+
+    result.append("     +");
+    for (int j = 0; j < board[0].length; j++) {
+        result.append("----");
+    }
+    result.append("\n");
+
+    for (int i = 0; i < board.length; i++) {
+        result.append(String.format("%-3d  | ", i + 1));
+
+        for (int j = 0; j < board[i].length; j++) {
+            result.append(String.format("[%s] ", board[i][j]));
+        }
+
+        result.append("\n");
+    }
+
+    return result.toString();
+}
+
+    @Override
+    public synchronized String toString() {
+        return getBoardString();
+    }
+
+    public synchronized void markCell(int i, int j) {
         if(i<0 || i>= board.length || j<0 || j >= board[0].length ){
             throw new RuntimeException("Cell no valid");
         }
