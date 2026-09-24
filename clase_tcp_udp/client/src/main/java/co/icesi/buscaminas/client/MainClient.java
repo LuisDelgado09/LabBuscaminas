@@ -67,10 +67,10 @@ public class MainClient {
     }
 
     private static void handleSelectCell(Scanner scanner) {
-        System.out.print("Fila (i): ");
-        int i = scanner.nextInt();
-        System.out.print("Columna (j): ");
-        int j = scanner.nextInt();
+        System.out.print("Fila: ");
+        int i = scanner.nextInt() -1;
+        System.out.print("Columna: ");
+        int j = scanner.nextInt() -1;
 
         Request req = new Request();
         req.action = "SELECT_CELL";
@@ -80,10 +80,10 @@ public class MainClient {
     }
 
     private static void handleMarkCell(Scanner scanner) {
-        System.out.print("Fila (i): ");
-        int i = scanner.nextInt();
-        System.out.print("Columna (j): ");
-        int j = scanner.nextInt();
+        System.out.print("Fila: ");
+        int i = scanner.nextInt()-1;
+        System.out.print("Columna: ");
+        int j = scanner.nextInt()-1;
 
         Request req = new Request();
         req.action = "MARK_CELL";
@@ -130,8 +130,8 @@ public class MainClient {
         // 1. Renderizar el tablero
         if (response.data != null && response.data.containsKey("board")) {
             Object board = response.data.get("board");
-            if (board instanceof Cell[][]) {
-                printBoard((Cell[][]) board);
+            if (board instanceof String) {
+                System.out.println(board);
             } else {
                 System.out.println("Tablero recibido en un formato no compatible.");
             }

@@ -17,7 +17,6 @@ import com.google.gson.GsonBuilder;
 
 import co.icesi.buscaminas.controllers.dtos.Request;
 import co.icesi.buscaminas.controllers.dtos.Response;
-import co.icesi.buscaminas.model.Cell;
 import co.icesi.buscaminas.services.ServicesImpl;
 
 public class TCPController {
@@ -109,7 +108,7 @@ public class TCPController {
                             response.data.put("win", false);
 
                         }
-                        Cell[][] board = services.printBoard();
+                        String board = services.printBoard();
                         response.data.put("board", board);
                         break;
                     case "SOW_ALL":
