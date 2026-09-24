@@ -12,9 +12,5 @@ dependencies {
 }
 
 application {
-    mainClass = 'co.icesi.buscaminas.client.MainClient'
-}
-
-run {
-    standardInput = System.in
+    mainClass = 'co.icesi.buscaminas.Main'
 }
